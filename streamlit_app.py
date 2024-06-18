@@ -16,7 +16,7 @@ if os.path.exists(csv_file):
 else:
     reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 
-#st.session_state.reviews = reviews
+st.session_state.reviews = reviews
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
@@ -53,7 +53,7 @@ if st.sidebar.button("Submit"):
             st.session_state.reviews.to_csv(file, index=False)
             file.flush()
             os.fsync(file.fileno())
-        st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
+        #st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
