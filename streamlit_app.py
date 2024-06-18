@@ -8,7 +8,7 @@ import base64
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
-github_repo = 'YOUR_GITHUB_USERNAME/YOUR_REPOSITORY'
+github_repo = 'saqfromchurchvillage/streamlit'
 github_token = st.secrets["github_token"]  # Lisää tämä Streamlit-sekretiksi Streamlitin asetuksissa
 
 def read_github_file(repo, file_path, token):
