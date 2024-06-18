@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Tiedoston nimi
-csv_file = 'beer_reviews.csv'
+csv_file = 'olut_ranking.csv'
 
 # Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
 if os.path.exists(csv_file):
@@ -74,8 +74,8 @@ st.markdown(st.session_state.reviews.to_html(classes='wide-table'), unsafe_allow
 # Top 5 beers
 st.subheader("Top 5 Oluet")
 top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
-top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
-top_beers.index = top_beers.index + 1  # Aloita indeksointi numerosta 1
+top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5).reset_index(drop=True)
+top_beers.index += 1  # Aloita indeksointi numerosta 1
 st.markdown(top_beers.to_html(classes='wide-table'), unsafe_allow_html=True)
 
 # Average ratings per beer
