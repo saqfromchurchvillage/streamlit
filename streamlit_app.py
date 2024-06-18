@@ -19,7 +19,7 @@ else:
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
 
-st.title(":flag-ch: Tsekkioluiden ranking by Susilauma :wolf:")
+st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 
 # Sidebar for submitting reviews
 st.sidebar.title("Arvioi olut")
@@ -41,7 +41,7 @@ else:
 
 beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
 
-rating = st.sidebar.slider("Rating", 0.0, 5.0, 2.5, step=0.25)
+rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
@@ -71,40 +71,39 @@ st.markdown(
 st.subheader("Kaikki arvostelut")
 st.markdown(st.session_state.reviews.to_html(classes='wide-table'), unsafe_allow_html=True)
 
-st. empty()
-st. empty()
+st.empty()
+st.empty()
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
-top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
+top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Arvosana", "mean"), Arvosteluja=("Arvosana", "count")).reset_index()
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 
 # Muuta DataFrame HTML:ksi ilman indeksiä
-top_beers_html = top_beers.to_html(classes='wide-table')
+top_beers_html = top_beers.to_html(classes='wide-table', index=False)
 
 # Näytä Top 5 oluet
 st.markdown(top_beers_html, unsafe_allow_html=True)
 
-
-st. empty()
+st.empty()
 
 # Average ratings per beer
 st.subheader("Keskiarvoarvosana per Olut")
-average_ratings = st.session_state.reviews.groupby("Oluen nimi")["Rating"].mean().reset_index()
+average_ratings = st.session_state.reviews.groupby("Oluen nimi")["Arvosana"].mean().reset_index()
 fig, ax = plt.subplots()
-ax.barh(average_ratings["Oluen nimi"], average_ratings["Rating"], color='skyblue')
+ax.barh(average_ratings["Oluen nimi"], average_ratings["Arvosana"], color='skyblue')
 ax.set_xlabel("Keskiarvo")
 ax.set_title("Keskiarvoarvosana per Olut")
 st.pyplot(fig)
 
-st. empty()
-st. empty()
+st.empty()
+st.empty()
 
 # Rating distribution
 st.subheader("Arvostelujen jakauma")
-rating_counts = st.session_state.reviews["Rating"].value_counts().sort_index()
+rating_counts = st.session_state.reviews["Arvosana"].value_counts().sort_index()
 fig, ax = plt.subplots()
-bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.2)
+bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
 ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
 ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
 ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
@@ -113,19 +112,11 @@ ax.set_ylabel("Arvostelujen lukumäärä")
 ax.set_title("Arvostelujen jakauma")
 ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
 
-
-# Aseta pylväiden väli
-for bar in bars:
-    bar.set_width(0.4)  # Leventää pylväitä
-    #bar.set_x(bar.get_x() - 0.2)  # Siirtää pylväitä vasemmalle, jotta ne eivät mene päällekkäin
-
 st.pyplot(fig)
-
-
 
 # Heatmap of ratings by reviewer and beer
 st.subheader("Arvostelijakohtaiset arvosanat")
-pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Rating", aggfunc='mean')
+pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Arvosana", aggfunc='mean')
 fig, ax = plt.subplots(figsize=(10, 8))
 sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
 ax.set_title("Arvostelijakohtaiset arvosanat")
