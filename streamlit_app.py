@@ -49,7 +49,11 @@ if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
-        st.session_state.reviews.to_csv(csv_file, index=False)  # Tallenna tiedostoon
+        with open(csv_file, 'w', newline='', encoding='utf-8') as file:
+            st.session_state.reviews.to_csv(file, index=False)
+            file.flush()
+            os.fsync(file.fileno())
+        st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
