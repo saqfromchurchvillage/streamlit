@@ -70,7 +70,10 @@ st.markdown(
 # Display all reviews
 st.subheader("Kaikki arvostelut")
 st.markdown(st.session_state.reviews.to_html(classes='wide-table'), unsafe_allow_html=True)
+
 st. empty()
+st. empty()
+
 # Top 5 beers
 st.subheader("Top 5 Oluet")
 top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
@@ -95,6 +98,7 @@ ax.set_title("Keskiarvoarvosana per Olut")
 st.pyplot(fig)
 
 st. empty()
+st. empty()
 
 # Rating distribution
 st.subheader("Arvostelujen jakauma")
@@ -112,7 +116,7 @@ ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaislu
 
 # Aseta pylväiden väli
 for bar in bars:
-    bar.set_width(0.1)  # Leventää pylväitä
+    bar.set_width(0.4)  # Leventää pylväitä
     #bar.set_x(bar.get_x() - 0.2)  # Siirtää pylväitä vasemmalle, jotta ne eivät mene päällekkäin
 
 st.pyplot(fig)
