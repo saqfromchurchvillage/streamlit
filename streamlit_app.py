@@ -1,13 +1,18 @@
 import streamlit as st
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
 
 # Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
-if os.path.exists(csv_file) and os.path.getsize(csv_file) > 0:
-    st.session_state.reviews = pd.read_csv(csv_file)
+if os.path.exists(csv_file):
+    try:
+        st.session_state.reviews = pd.read_csv(csv_file)
+    except pd.errors.EmptyDataError:
+        st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Rating"])
 else:
     st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Rating"])
 
@@ -46,6 +51,18 @@ if st.sidebar.button("Submit"):
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
+
+# CSS for widening table cells
+st.markdown(
+    """
+    <style>
+    .dataframe th, .dataframe td {
+        width: auto !important;
+        min-width: 150px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
 
 # Display all reviews
 st.subheader("Kaikki arvostelut")
