@@ -76,14 +76,15 @@ st.subheader("Top 5 Oluet")
 top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 
-# Luo uusi DataFrame indeksoinnilla
-top_beers.index = range(1, len(top_beers) + 1)  # Aloita indeksointi numerosta 1
+# Luo uusi DataFrame indeksoinnilla 0-4
+top_beers.reset_index(drop=True, inplace=True)
 
-# Muuta DataFrame HTML:ksi ja lisää indeksi
-top_beers_html = top_beers.to_html(classes='wide-table', index_names=False)
+# Muuta DataFrame HTML:ksi ilman indeksiä
+top_beers_html = top_beers.to_html(classes='wide-table', index=False)
 
 # Näytä Top 5 oluet
 st.markdown(top_beers_html, unsafe_allow_html=True)
+
 
 
 # Average ratings per beer
