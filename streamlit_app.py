@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Tiedoston nimi
-csv_file = 'beer_reviews.csv'
+csv_file = 'olut_ranking.csv'
 
 # Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
 if os.path.exists(csv_file):
