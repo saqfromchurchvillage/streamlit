@@ -53,7 +53,7 @@ if st.sidebar.button("Submit"):
             st.session_state.reviews.to_csv(file, index=False)
             file.flush()
             os.fsync(file.fileno())
-        #st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
+        st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
