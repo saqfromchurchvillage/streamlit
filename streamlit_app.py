@@ -69,7 +69,7 @@ st.markdown(
 
 # Display all reviews
 st.subheader("Kaikki arvostelut")
-st.markdown(st.session_state.reviews.to_html(classes='wide-table'), unsafe_allow_html=True)
+st.markdown(st.session_state.reviews.to_html(classes='wide-table', index=False), unsafe_allow_html=True)
 
 st.empty()
 st.empty()
