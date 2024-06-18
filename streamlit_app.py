@@ -73,7 +73,7 @@ st.dataframe(st.session_state.reviews)
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
-top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
+top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 st.markdown(top_beers.to_html(classes='wide-table'), unsafe_allow_html=True)
 
@@ -94,6 +94,7 @@ ax.bar(rating_counts.index, rating_counts.values, color='lightgreen')
 ax.set_xlabel("Rating")
 ax.set_ylabel("Arvostelujen lukumäärä")
 ax.set_title("Arvostelujen jakauma")
+ax.yaxis.get_major_locator().set_params(integer=True)  # Show only integers on y-axis
 st.pyplot(fig)
 
 # Heatmap of ratings by reviewer and beer
