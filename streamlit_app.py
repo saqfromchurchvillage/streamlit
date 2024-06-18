@@ -45,7 +45,7 @@ rating = st.sidebar.slider("Rating", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
-        new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Rating": [rating]})
+        new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
         st.session_state.reviews.to_csv(csv_file, index=False)
         st.sidebar.success("Arvostelu tallennettu!")
@@ -86,12 +86,12 @@ st.markdown(top_beers_html, unsafe_allow_html=True)
 st. empty()
 
 # Average ratings per beer
-st.subheader("Keskiarvo Rating per Olut")
+st.subheader("Keskiarvoarvosana per Olut")
 average_ratings = st.session_state.reviews.groupby("Oluen nimi")["Rating"].mean().reset_index()
 fig, ax = plt.subplots()
 ax.barh(average_ratings["Oluen nimi"], average_ratings["Rating"], color='skyblue')
-ax.set_xlabel("Keskiarvo Rating")
-ax.set_title("Keskiarvo Rating per Olut")
+ax.set_xlabel("Keskiarvo")
+ax.set_title("Keskiarvoarvosana per Olut")
 st.pyplot(fig)
 
 st. empty()
