@@ -5,8 +5,8 @@ import os
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
 
-# Lue olemassa olevat arvostelut CSV-tiedostosta
-if os.path.exists(csv_file):
+# Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
+if os.path.exists(csv_file) and os.path.getsize(csv_file) > 0:
     st.session_state.reviews = pd.read_csv(csv_file)
 else:
     st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
@@ -62,24 +62,4 @@ st.subheader("Keskiarvo Rating per Olut")
 average_ratings = st.session_state.reviews.groupby("Oluen nimi")["Rating"].mean().reset_index()
 fig, ax = plt.subplots()
 ax.barh(average_ratings["Oluen nimi"], average_ratings["Rating"], color='skyblue')
-ax.set_xlabel("Keskiarvo Rating")
-ax.set_title("Keskiarvo Rating per Olut")
-st.pyplot(fig)
-
-# Rating distribution
-st.subheader("Arvostelujen jakauma")
-rating_counts = st.session_state.reviews["Rating"].value_counts().sort_index()
-fig, ax = plt.subplots()
-ax.bar(rating_counts.index, rating_counts.values, color='lightgreen')
-ax.set_xlabel("Rating")
-ax.set_ylabel("Arvostelujen lukumäärä")
-ax.set_title("Arvostelujen jakauma")
-st.pyplot(fig)
-
-# Heatmap of ratings by reviewer and beer
-st.subheader("Arvostelijakohtaiset arvosanat")
-pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Rating", aggfunc='mean')
-fig, ax = plt.subplots(figsize=(10, 8))
-sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
-ax.set_title("Arvostelijakohtaiset arvosanat")
-st.pyplot(fig)
+ax.set_xlabel("Ke
