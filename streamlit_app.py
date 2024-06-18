@@ -1,11 +1,15 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import os
 
-# Initial setup
-if "reviews" not in st.session_state:
-    st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Rating"])
+# Tiedoston nimi
+csv_file = 'olut_ranking.csv'
+
+# Lue olemassa olevat arvostelut CSV-tiedostosta
+if os.path.exists(csv_file):
+    st.session_state.reviews = pd.read_csv(csv_file)
+else:
+    st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
@@ -38,11 +42,14 @@ if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Rating": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
+        st.session_state.reviews.to_csv(csv_file, index=False)
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
 
-
+# Display all reviews
+st.subheader("Kaikki arvostelut")
+st.dataframe(st.session_state.reviews)
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
@@ -59,9 +66,15 @@ ax.set_xlabel("Keskiarvo Rating")
 ax.set_title("Keskiarvo Rating per Olut")
 st.pyplot(fig)
 
-# Display all reviews
-st.subheader("Kaikki arvostelut")
-st.dataframe(st.session_state.reviews)
+# Rating distribution
+st.subheader("Arvostelujen jakauma")
+rating_counts = st.session_state.reviews["Rating"].value_counts().sort_index()
+fig, ax = plt.subplots()
+ax.bar(rating_counts.index, rating_counts.values, color='lightgreen')
+ax.set_xlabel("Rating")
+ax.set_ylabel("Arvostelujen lukumäärä")
+ax.set_title("Arvostelujen jakauma")
+st.pyplot(fig)
 
 # Heatmap of ratings by reviewer and beer
 st.subheader("Arvostelijakohtaiset arvosanat")
