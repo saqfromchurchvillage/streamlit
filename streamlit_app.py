@@ -19,7 +19,7 @@ else:
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
 
-st.title("Tsekkioluiden ranking by Susilauma")
+st.title(":flag-ch: Tsekkioluiden ranking by Susilauma :wolf:")
 
 # Sidebar for submitting reviews
 st.sidebar.title("Arvioi olut")
