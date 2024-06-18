@@ -109,7 +109,7 @@ ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaislu
 
 # Aseta pylväiden väli
 for bar in bars:
-    bar.set_width(0.8)  # Leventää pylväitä
+    bar.set_width(0.3)  # Leventää pylväitä
     bar.set_x(bar.get_x() - 0.2)  # Siirtää pylväitä vasemmalle, jotta ne eivät mene päällekkäin
 
 st.pyplot(fig)
