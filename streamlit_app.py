@@ -1,6 +1,7 @@
 import streamlit as st
 import csv
 import os
+import pandas as pd
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
