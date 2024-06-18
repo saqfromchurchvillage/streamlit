@@ -12,9 +12,9 @@ if os.path.exists(csv_file):
     try:
         st.session_state.reviews = pd.read_csv(csv_file)
     except pd.errors.EmptyDataError:
-        st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Rating"])
+        st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 else:
-    st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Rating"])
+    st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
@@ -100,11 +100,11 @@ st. empty()
 st.subheader("Arvostelujen jakauma")
 rating_counts = st.session_state.reviews["Rating"].value_counts().sort_index()
 fig, ax = plt.subplots()
-bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
+bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.2)
 ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
 ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
 ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
-ax.set_xlabel("Rating")
+ax.set_xlabel("Arvosana")
 ax.set_ylabel("Arvostelujen lukumäärä")
 ax.set_title("Arvostelujen jakauma")
 ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
