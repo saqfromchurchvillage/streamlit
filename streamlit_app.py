@@ -60,6 +60,9 @@ st.markdown(
         width: auto !important;
         min-width: 150px !important;
     }
+    .wide-table {
+        width: 100%;
+    }
     </style>
     """, unsafe_allow_html=True
 )
@@ -72,7 +75,7 @@ st.dataframe(st.session_state.reviews)
 st.subheader("Top 5 Oluet")
 top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Rating", "mean"), Arvosteluja=("Rating", "count")).reset_index()
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
-st.table(top_beers)
+st.markdown(top_beers.to_html(classes='wide-table'), unsafe_allow_html=True)
 
 # Average ratings per beer
 st.subheader("Keskiarvo Rating per Olut")
