@@ -69,7 +69,7 @@ st.markdown(
 
 # Display all reviews
 st.subheader("Kaikki arvostelut")
-st.dataframe(st.session_state.reviews)
+st.markdown(st.session_state.reviews.to_html(classes='wide-table'), unsafe_allow_html=True)
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
