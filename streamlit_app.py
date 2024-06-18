@@ -41,7 +41,7 @@ else:
 
 beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
 
-rating = st.sidebar.slider("Rating", 1.0, 5.0, 2.5)
+rating = st.sidebar.slider("Rating", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
