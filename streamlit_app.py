@@ -16,7 +16,7 @@ if os.path.exists(csv_file):
 else:
     reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 
-st.session_state.reviews = reviews
+#st.session_state.reviews = reviews
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
