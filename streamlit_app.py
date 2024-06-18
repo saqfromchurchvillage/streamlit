@@ -1,16 +1,22 @@
 import streamlit as st
-import csv
-import os
 import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
 
-# Alusta CSV-tiedosto, jos se ei ole olemassa
-if not os.path.exists(csv_file):
-    with open(csv_file, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+# Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
+if os.path.exists(csv_file):
+    try:
+        reviews = pd.read_csv(csv_file)
+    except pd.errors.EmptyDataError:
+        reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+else:
+    reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+
+st.session_state.reviews = reviews
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
@@ -41,10 +47,9 @@ rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
-        # Kirjoita uusi arvostelu suoraan CSV-tiedostoon
-        with open(csv_file, mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([beer_name, arvostelijan_nimi, beer_type, rating])
+        new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
+        st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
+        st.session_state.reviews.to_csv(csv_file, index=False)  # Tallenna tiedostoon
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
@@ -64,62 +69,57 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Näytä kaikki arvostelut
+# Display all reviews
 st.subheader("Kaikki arvostelut")
-if os.path.exists(csv_file):
-    reviews = pd.read_csv(csv_file)
-    st.markdown(reviews.to_html(classes='wide-table', index=False), unsafe_allow_html=True)
+st.markdown(st.session_state.reviews.to_html(classes='wide-table', index=False), unsafe_allow_html=True)
 
 st.empty()
 st.empty()
 
-# Top 5 oluet
+# Top 5 beers
 st.subheader("Top 5 Oluet")
-if os.path.exists(csv_file):
-    reviews = pd.read_csv(csv_file)
-    top_beers = reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Arvosana", "mean"), Arvosteluja=("Arvosana", "count")).reset_index()
-    top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
-    top_beers_html = top_beers.to_html(classes='wide-table', index=False)
-    st.markdown(top_beers_html, unsafe_allow_html=True)
+top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keskiarvo=("Arvosana", "mean"), Arvosteluja=("Arvosana", "count")).reset_index()
+top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
+
+# Muuta DataFrame HTML:ksi ilman indeksiä
+top_beers_html = top_beers.to_html(classes='wide-table', index=False)
+
+# Näytä Top 5 oluet
+st.markdown(top_beers_html, unsafe_allow_html=True)
 
 st.empty()
 
-# Keskiarvoarvosana per olut
+# Average ratings per beer
 st.subheader("Keskiarvoarvosana per Olut")
-if os.path.exists(csv_file):
-    reviews = pd.read_csv(csv_file)
-    average_ratings = reviews.groupby("Oluen nimi")["Arvosana"].mean().reset_index()
-    fig, ax = plt.subplots()
-    ax.barh(average_ratings["Oluen nimi"], average_ratings["Arvosana"], color='skyblue')
-    ax.set_xlabel("Keskiarvo")
-    ax.set_title("Keskiarvoarvosana per Olut")
-    st.pyplot(fig)
+average_ratings = st.session_state.reviews.groupby("Oluen nimi")["Arvosana"].mean().reset_index()
+fig, ax = plt.subplots()
+ax.barh(average_ratings["Oluen nimi"], average_ratings["Arvosana"], color='skyblue')
+ax.set_xlabel("Keskiarvo")
+ax.set_title("Keskiarvoarvosana per Olut")
+st.pyplot(fig)
 
 st.empty()
 st.empty()
 
-# Arvostelujen jakauma
+# Rating distribution
 st.subheader("Arvostelujen jakauma")
-if os.path.exists(csv_file):
-    reviews = pd.read_csv(csv_file)
-    rating_counts = reviews["Arvosana"].value_counts().sort_index()
-    fig, ax = plt.subplots()
-    bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
-    ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
-    ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
-    ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
-    ax.set_xlabel("Arvosana")
-    ax.set_ylabel("Arvostelujen lukumäärä")
-    ax.set_title("Arvostelujen jakauma")
-    ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
-    st.pyplot(fig)
+rating_counts = st.session_state.reviews["Arvosana"].value_counts().sort_index()
+fig, ax = plt.subplots()
+bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
+ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
+ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
+ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
+ax.set_xlabel("Arvosana")
+ax.set_ylabel("Arvostelujen lukumäärä")
+ax.set_title("Arvostelujen jakauma")
+ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
 
-# Arvostelijakohtaiset arvosanat
+st.pyplot(fig)
+
+# Heatmap of ratings by reviewer and beer
 st.subheader("Arvostelijakohtaiset arvosanat")
-if os.path.exists(csv_file):
-    reviews = pd.read_csv(csv_file)
-    pivot_table = reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Arvosana", aggfunc='mean')
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
-    ax.set_title("Arvostelijakohtaiset arvosanat")
-    st.pyplot(fig)
+pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Arvosana", aggfunc='mean')
+fig, ax = plt.subplots(figsize=(10, 8))
+sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
+ax.set_title("Arvostelijakohtaiset arvosanat")
+st.pyplot(fig)
