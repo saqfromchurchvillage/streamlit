@@ -77,7 +77,7 @@ top_beers = st.session_state.reviews.groupby(["Oluen nimi", "Tyyppi"]).agg(Keski
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 
 # Muuta DataFrame HTML:ksi ilman indeksiä
-top_beers_html = top_beers.to_html(classes='wide-table', index=True)
+top_beers_html = top_beers.to_html(classes='wide-table')
 
 # Näytä Top 5 oluet
 st.markdown(top_beers_html, unsafe_allow_html=True)
