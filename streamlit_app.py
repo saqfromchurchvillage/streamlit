@@ -10,11 +10,13 @@ csv_file = 'olut_ranking.csv'
 # Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
 if os.path.exists(csv_file):
     try:
-        st.session_state.reviews = pd.read_csv(csv_file)
+        reviews = pd.read_csv(csv_file)
     except pd.errors.EmptyDataError:
-        st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+        reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 else:
-    st.session_state.reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+    reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
+
+st.session_state.reviews = reviews
 
 if "beer_names" not in st.session_state:
     st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
@@ -47,7 +49,7 @@ if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
-        st.session_state.reviews.to_csv(csv_file, index=False)
+        st.session_state.reviews.to_csv(csv_file, index=False)  # Tallenna tiedostoon
         st.sidebar.success("Arvostelu tallennettu!")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
