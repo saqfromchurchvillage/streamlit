@@ -3,14 +3,43 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import requests
+import base64
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
+github_repo = 'YOUR_GITHUB_USERNAME/YOUR_REPOSITORY'
+github_token = st.secrets["github_token"]  # Lisää tämä Streamlit-sekretiksi Streamlitin asetuksissa
+
+def read_github_file(repo, file_path, token):
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {"Authorization": f"token {token}"}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        file_content = response.json()['content']
+        return base64.b64decode(file_content).decode('utf-8')
+    else:
+        return None
+
+def write_github_file(repo, file_path, content, token, sha=None):
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {"Authorization": f"token {token}"}
+    data = {
+        "message": "Update CSV file",
+        "content": base64.b64encode(content.encode('utf-8')).decode('utf-8'),
+        "branch": "main"
+    }
+    if sha:
+        data["sha"] = sha
+
+    response = requests.put(url, json=data, headers=headers)
+    return response.status_code == 201 or response.status_code == 200
 
 # Lue olemassa olevat arvostelut CSV-tiedostosta tai luo tyhjä DataFrame
-if os.path.exists(csv_file):
+csv_content = read_github_file(github_repo, csv_file, github_token)
+if csv_content:
     try:
-        reviews = pd.read_csv(csv_file)
+        reviews = pd.read_csv(pd.compat.StringIO(csv_content))
     except pd.errors.EmptyDataError:
         reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 else:
@@ -49,12 +78,17 @@ if st.sidebar.button("Submit"):
     if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
-        with open(csv_file, 'w', newline='', encoding='utf-8') as file:
-            st.session_state.reviews.to_csv(file, index=False)
-            file.flush()
-            os.fsync(file.fileno())
-        st.write(st.session_state.reviews)  # Debug: Näytä DataFrame ennen tallennusta
-        st.sidebar.success("Arvostelu tallennettu!")
+        csv_updated_content = st.session_state.reviews.to_csv(index=False)
+        
+        # Getting SHA of the existing file
+        sha_url = f"https://api.github.com/repos/{github_repo}/contents/{csv_file}"
+        sha_response = requests.get(sha_url, headers={"Authorization": f"token {github_token}"})
+        sha = sha_response.json().get("sha")
+        
+        if write_github_file(github_repo, csv_file, csv_updated_content, github_token, sha):
+            st.sidebar.success("Arvostelu tallennettu!")
+        else:
+            st.sidebar.error("Virhe tallennettaessa GitHubiin.")
     else:
         st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
 
@@ -112,18 +146,4 @@ fig, ax = plt.subplots()
 bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
 ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
 ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
-ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
-ax.set_xlabel("Arvosana")
-ax.set_ylabel("Arvostelujen lukumäärä")
-ax.set_title("Arvostelujen jakauma")
-ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
-
-st.pyplot(fig)
-
-# Heatmap of ratings by reviewer and beer
-st.subheader("Arvostelijakohtaiset arvosanat")
-pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Arvosana", aggfunc='mean')
-fig, ax = plt.subplots(figsize=(10, 8))
-sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
-ax.set_title("Arvostelijakohtaiset arvosanat")
-st.pyplot(fig)
+ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  #
