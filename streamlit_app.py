@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import requests
 import base64
+import io
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
@@ -39,7 +40,7 @@ def write_github_file(repo, file_path, content, token, sha=None):
 csv_content = read_github_file(github_repo, csv_file, github_token)
 if csv_content:
     try:
-        reviews = pd.read_csv(pd.compat.StringIO(csv_content))
+        reviews = pd.read_csv(io.StringIO(csv_content))
     except pd.errors.EmptyDataError:
         reviews = pd.DataFrame(columns=["Oluen nimi", "Arvostelija", "Tyyppi", "Arvosana"])
 else:
@@ -146,4 +147,18 @@ fig, ax = plt.subplots()
 bars = ax.bar(rating_counts.index, rating_counts.values, color='lightgreen', width=0.4)
 ax.set_xticks([i for i in range(6)])  # Näytä luvut 0-5 x-akselilla
 ax.set_xlim(-0.5, 5.5)  # Aseta x-akselin rajoitukset
-ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  #
+ax.set_ylim(0, max(rating_counts.values, default=1) + 1)  # Aseta y-akselin rajoitukset
+ax.set_xlabel("Arvosana")
+ax.set_ylabel("Arvostelujen lukumäärä")
+ax.set_title("Arvostelujen jakauma")
+ax.yaxis.get_major_locator().set_params(integer=True)  # Näytä vain kokonaisluvut y-akselilla
+
+st.pyplot(fig)
+
+# Heatmap of ratings by reviewer and beer
+st.subheader("Arvostelijakohtaiset arvosanat")
+pivot_table = st.session_state.reviews.pivot_table(index="Oluen nimi", columns="Arvostelija", values="Arvosana", aggfunc='mean')
+fig, ax = plt.subplots(figsize=(10, 8))
+sns.heatmap(pivot_table, annot=True, fmt=".1f", cmap="YlGnBu", cbar=True, ax=ax)
+ax.set_title("Arvostelijakohtaiset arvosanat")
+st.pyplot(fig)
