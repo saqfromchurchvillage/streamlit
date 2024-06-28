@@ -117,7 +117,7 @@ st.empty()
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
-top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Arvosana", "mean"), Arvosteluja=("Arvosana", "count")).reset_index()
+top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Arvosana", lambda x: round(x.mean(), 2)), Arvosteluja=("Arvosana", "count")).reset_index()
 top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 
 # Muuta DataFrame HTML:ksi ilman indeksiä
@@ -125,6 +125,7 @@ top_beers_html = top_beers.to_html(classes='wide-table', index=False)
 
 # Näytä Top 5 oluet
 st.markdown(top_beers_html, unsafe_allow_html=True)
+
 
 st.empty()
 
