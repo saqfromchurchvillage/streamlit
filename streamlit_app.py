@@ -108,12 +108,20 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-# Display all reviews
-st.subheader("Kaikki arvostelut")
-st.markdown(st.session_state.reviews.to_html(classes='wide-table', index=False), unsafe_allow_html=True)
+# Arvostelijakohtaiset tilastot
+st.subheader("Arvostelijakohtaiset tilastot")
+reviewer_stats = st.session_state.reviews.groupby("Arvostelija").agg(
+    Arvosteluja=("Arvosana", "count"),
+    Keskiarvo=("Arvosana", lambda x: round(x.mean(), 2)),
+    Minimiarvosana=("Arvosana", "min"),
+    Maksimiarvosana=("Arvosana", "max")
+).reset_index()
 
-st.empty()
-st.empty()
+# Muuta DataFrame HTML:ksi ilman indeksiä
+reviewer_stats_html = reviewer_stats.to_html(classes='wide-table', index=False)
+
+# Näytä arvostelijakohtaiset tilastot
+st.markdown(reviewer_stats_html, unsafe_allow_html=True)
 
 # Top 5 beers
 st.subheader("Top 5 Oluet")
@@ -126,9 +134,7 @@ top_beers_html = top_beers.to_html(classes='wide-table', index=False)
 # Näytä Top 5 oluet
 st.markdown(top_beers_html, unsafe_allow_html=True)
 
-
 st.empty()
-
 
 # Average ratings per beer
 st.subheader("Keskiarvoarvosana per Olut")
@@ -140,7 +146,13 @@ ax.set_title("Keskiarvoarvosana per Olut")
 st.pyplot(fig)
 
 st.empty()
+
+# Display all reviews
+st.subheader("Kaikki arvostelut")
+st.markdown(st.session_state.reviews.to_html(classes='wide-table', index=False), unsafe_allow_html=True)
+
 st.empty()
+
 
 # Rating distribution
 st.subheader("Arvostelujen jakauma")
