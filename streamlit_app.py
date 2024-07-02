@@ -108,6 +108,20 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
+
+# Top 5 beers
+st.subheader("Top 5 Oluet")
+top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Arvosana", lambda x: round(x.mean(), 2)), Arvosteluja=("Arvosana", "count")).reset_index()
+top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
+
+# Muuta DataFrame HTML:ksi ilman indeksiä
+top_beers_html = top_beers.to_html(classes='wide-table', index=False)
+
+# Näytä Top 5 oluet
+st.markdown(top_beers_html, unsafe_allow_html=True)
+
+st.empty()
+
 # Arvostelijakohtaiset tilastot
 st.subheader("Arvostelijakohtaiset tilastot")
 reviewer_stats = st.session_state.reviews.groupby("Arvostelija").agg(
@@ -123,18 +137,7 @@ reviewer_stats_html = reviewer_stats.to_html(classes='wide-table', index=False)
 # Näytä arvostelijakohtaiset tilastot
 st.markdown(reviewer_stats_html, unsafe_allow_html=True)
 
-# Top 5 beers
-st.subheader("Top 5 Oluet")
-top_beers = st.session_state.reviews.groupby("Oluen nimi").agg(Keskiarvo=("Arvosana", lambda x: round(x.mean(), 2)), Arvosteluja=("Arvosana", "count")).reset_index()
-top_beers = top_beers.sort_values(by="Keskiarvo", ascending=False).head(5)
 
-# Muuta DataFrame HTML:ksi ilman indeksiä
-top_beers_html = top_beers.to_html(classes='wide-table', index=False)
-
-# Näytä Top 5 oluet
-st.markdown(top_beers_html, unsafe_allow_html=True)
-
-st.empty()
 
 # Average ratings per beer
 st.subheader("Keskiarvoarvosana per Olut")
