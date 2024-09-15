@@ -6,6 +6,7 @@ import seaborn as sns
 import requests
 import base64
 import io
+from streamlit_tags import st_tags
 
 # Tiedoston nimi
 csv_file = 'olut_ranking.csv'
@@ -61,23 +62,29 @@ st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 st.sidebar.title("Arvioi olut")
 arvostelijan_nimi = st.sidebar.text_input("Arvostelija")
 
-# Oluen nimen syöttö tekstikenttänä
-beer_name_input = st.sidebar.text_input("Oluen nimi")
+# Käytä st_tags komponenttia oluen nimen syöttämiseen
+beer_name_input = st_tags(
+    label='Oluen nimi',
+    text='Kirjoita oluen nimi ja valitse listasta tai lisää uusi',
+    value=[],
+    suggestions=st.session_state.beer_names,
+    maxtags=1,  # Salli vain yksi nimi
+    key='beer_name_tags'
+)
 
-# Näytä suodatetut ehdotukset käyttäjän syötteen perusteella
 if beer_name_input:
-    suggestions = [name for name in st.session_state.beer_names if beer_name_input.lower() in name.lower()]
-    if suggestions:
-        st.sidebar.write("Ehdotukset:")
-        for suggestion in suggestions:
-            st.sidebar.write(f"- {suggestion}")
+    beer_name = beer_name_input[0]  # Otetaan ensimmäinen (ja ainoa) syötetty nimi
+    # Näytetään valittu oluen nimi
+    st.sidebar.markdown(f"**Valittu olut:** {beer_name}")
+else:
+    beer_name = ""
+    st.sidebar.warning("Ole hyvä ja syötä oluen nimi.")
 
 beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
 
 rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
-    beer_name = beer_name_input.strip()
     if beer_name and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
