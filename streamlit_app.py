@@ -62,50 +62,52 @@ st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 st.sidebar.title("Arvioi olut")
 arvostelijan_nimi = st.sidebar.text_input("Arvostelija")
 
-# Käytä st_tags komponenttia oluen nimen syöttämiseen
-beer_name_input = st_tags(
-    label='Oluen nimi',
-    text='Kirjoita oluen nimi ja valitse listasta tai lisää uusi',
-    value=[],
-    suggestions=st.session_state.beer_names,
-    maxtags=1,  # Salli vain yksi nimi
-    key='beer_name_tags'
-)
+# Käytä 'with st.sidebar:' -kontekstia
+with st.sidebar:
+    # Käytä st_tags komponenttia oluen nimen syöttämiseen
+    beer_name_input = st_tags(
+        label='Oluen nimi',
+        text='Kirjoita oluen nimi ja valitse listasta tai lisää uusi',
+        value=[],
+        suggestions=st.session_state.beer_names,
+        maxtags=1,  # Salli vain yksi nimi
+        key='beer_name_tags'
+    )
 
-if beer_name_input:
-    beer_name = beer_name_input[0]  # Otetaan ensimmäinen (ja ainoa) syötetty nimi
-    # Näytetään valittu oluen nimi
-    st.sidebar.markdown(f"**Valittu olut:** {beer_name}")
-else:
-    beer_name = ""
-    st.sidebar.warning("Ole hyvä ja syötä oluen nimi.")
-
-beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
-
-rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
-
-if st.sidebar.button("Submit"):
-    if beer_name and arvostelijan_nimi:
-        new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
-        st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
-        csv_updated_content = st.session_state.reviews.to_csv(index=False)
-        
-        # Päivitä oluen nimet, jos uusi olut lisätty
-        if beer_name not in st.session_state.beer_names:
-            st.session_state.beer_names.append(beer_name)
-            st.session_state.beer_names.sort()
-        
-        # Getting SHA of the existing file
-        sha_url = f"https://api.github.com/repos/{github_repo}/contents/{csv_file}"
-        sha_response = requests.get(sha_url, headers={"Authorization": f"token {github_token}"})
-        sha = sha_response.json().get("sha")
-        
-        if write_github_file(github_repo, csv_file, csv_updated_content, github_token, sha):
-            st.sidebar.success("Arvostelu tallennettu!")
-        else:
-            st.sidebar.error("Virhe tallennettaessa GitHubiin.")
+    if beer_name_input:
+        beer_name = beer_name_input[0]  # Otetaan ensimmäinen (ja ainoa) syötetty nimi
+        # Näytetään valittu oluen nimi
+        st.markdown(f"**Valittu olut:** {beer_name}")
     else:
-        st.sidebar.warning("Muista lisätä oluen nimi ja arvostelijan nimi.")
+        beer_name = ""
+        st.warning("Ole hyvä ja syötä oluen nimi.")
+
+    beer_type = st.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
+
+    rating = st.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
+
+    if st.button("Submit"):
+        if beer_name and arvostelijan_nimi:
+            new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
+            st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
+            csv_updated_content = st.session_state.reviews.to_csv(index=False)
+            
+            # Päivitä oluen nimet, jos uusi olut lisätty
+            if beer_name not in st.session_state.beer_names:
+                st.session_state.beer_names.append(beer_name)
+                st.session_state.beer_names.sort()
+            
+            # Getting SHA of the existing file
+            sha_url = f"https://api.github.com/repos/{github_repo}/contents/{csv_file}"
+            sha_response = requests.get(sha_url, headers={"Authorization": f"token {github_token}"})
+            sha = sha_response.json().get("sha")
+            
+            if write_github_file(github_repo, csv_file, csv_updated_content, github_token, sha):
+                st.success("Arvostelu tallennettu!")
+            else:
+                st.error("Virhe tallennettaessa GitHubiin.")
+        else:
+            st.warning("Muista lisätä oluen nimi ja arvostelijan nimi.")
 
 # CSS for widening table cells
 st.markdown(
