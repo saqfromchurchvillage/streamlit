@@ -61,7 +61,7 @@ st.sidebar.title("Arvioi olut")
 arvostelijan_nimi = st.sidebar.text_input("Arvostelija")
 
 # Lisää vaihtoehto "Lisää uusi olut" oluen nimien listaan
-beer_name_options = ["Lisää uusi olut"] + beer_names
+beer_name_options = [""] + ["Lisää uusi olut"] + beer_names
 
 # Oluen nimen valinta pudotusvalikosta
 selected_option = st.sidebar.selectbox("Valitse oluen nimi", beer_name_options)
