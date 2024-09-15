@@ -48,8 +48,12 @@ else:
 
 st.session_state.reviews = reviews
 
+# Päivitä oluen nimet CSV-tiedostosta
 if "beer_names" not in st.session_state:
-    st.session_state.beer_names = ["Staropramen Lager", "Pilsner Urquell", "Budojovicky Budvar", "Postriziny Francinuv Lezak", "Krusovice Pale Lager", "Budejovicky 1795 Premium Lager", "Bernard Bohemiam Lager", "Lisää uusi olut"]
+    if not st.session_state.reviews.empty:
+        st.session_state.beer_names = sorted(set(st.session_state.reviews['Oluen nimi'].tolist()))
+    else:
+        st.session_state.beer_names = []
 
 st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 
@@ -57,29 +61,30 @@ st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 st.sidebar.title("Arvioi olut")
 arvostelijan_nimi = st.sidebar.text_input("Arvostelija")
 
-beer_name_option = st.sidebar.selectbox("Valitse oluen nimi", st.session_state.beer_names)
+# Käytä multiselectiä, jotta käyttäjä voi syöttää uuden oluen nimen tai valita olemassa olevan
+beer_name_input = st.sidebar.multiselect("Oluen nimi", options=st.session_state.beer_names, default=None)
 
-if beer_name_option == "Lisää uusi olut":
-    new_beer_name = st.sidebar.text_input("Lisää uusi olut")
-    if st.sidebar.button("Lisää oluen nimi"):
-        if new_beer_name and new_beer_name not in st.session_state.beer_names:
-            st.session_state.beer_names.append(new_beer_name)
-            st.sidebar.success(f"{new_beer_name} lisätty olutlistaan!")
-        else:
-            st.sidebar.warning("Virhe: olisikohan tuo nimi jo listassa? Hmmh...")
-    beer_name = new_beer_name
+if len(beer_name_input) == 1:
+    beer_name = beer_name_input[0]
+elif len(beer_name_input) == 0:
+    beer_name = ""
+    st.sidebar.warning("Ole hyvä ja syötä oluen nimi.")
 else:
-    beer_name = beer_name_option
+    beer_name = ""
+    st.sidebar.warning("Valitse vain yksi olut.")
 
 beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
 
 rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
-    if beer_name and beer_name != "Lisää uusi olut" and arvostelijan_nimi:
+    if beer_name and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
         csv_updated_content = st.session_state.reviews.to_csv(index=False)
+        
+        # Päivitä oluen nimet
+        st.session_state.beer_names = sorted(set(st.session_state.reviews['Oluen nimi'].tolist()))
         
         # Getting SHA of the existing file
         sha_url = f"https://api.github.com/repos/{github_repo}/contents/{csv_file}"
@@ -91,7 +96,7 @@ if st.sidebar.button("Submit"):
         else:
             st.sidebar.error("Virhe tallennettaessa GitHubiin.")
     else:
-        st.sidebar.warning("Muista lisätä oluen nimi, tyyppi ja arvostelijan nimi.")
+        st.sidebar.warning("Muista lisätä oluen nimi ja arvostelijan nimi.")
 
 # CSS for widening table cells
 st.markdown(
