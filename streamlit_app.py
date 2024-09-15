@@ -61,30 +61,32 @@ st.title(":flag-cz: Tsekkioluiden ranking by Susilauma :wolf:")
 st.sidebar.title("Arvioi olut")
 arvostelijan_nimi = st.sidebar.text_input("Arvostelija")
 
-# Käytä multiselectiä, jotta käyttäjä voi syöttää uuden oluen nimen tai valita olemassa olevan
-beer_name_input = st.sidebar.multiselect("Oluen nimi", options=st.session_state.beer_names, default=None)
+# Oluen nimen syöttö tekstikenttänä
+beer_name_input = st.sidebar.text_input("Oluen nimi")
 
-if len(beer_name_input) == 1:
-    beer_name = beer_name_input[0]
-elif len(beer_name_input) == 0:
-    beer_name = ""
-    st.sidebar.warning("Ole hyvä ja syötä oluen nimi.")
-else:
-    beer_name = ""
-    st.sidebar.warning("Valitse vain yksi olut.")
+# Näytä suodatetut ehdotukset käyttäjän syötteen perusteella
+if beer_name_input:
+    suggestions = [name for name in st.session_state.beer_names if beer_name_input.lower() in name.lower()]
+    if suggestions:
+        st.sidebar.write("Ehdotukset:")
+        for suggestion in suggestions:
+            st.sidebar.write(f"- {suggestion}")
 
 beer_type = st.sidebar.selectbox("Valitse oluen tyyppi", ["0,5 l tölkki", "0,33 l tölkki", "0,33 l lasipullo", "0,5 l lasipullo", "hanaolut"])
 
 rating = st.sidebar.slider("Arvosana", 0.0, 5.0, 2.5, step=0.25)
 
 if st.sidebar.button("Submit"):
+    beer_name = beer_name_input.strip()
     if beer_name and arvostelijan_nimi:
         new_review = pd.DataFrame({"Oluen nimi": [beer_name], "Arvostelija": [arvostelijan_nimi], "Tyyppi": [beer_type], "Arvosana": [rating]})
         st.session_state.reviews = pd.concat([st.session_state.reviews, new_review], ignore_index=True)
         csv_updated_content = st.session_state.reviews.to_csv(index=False)
         
-        # Päivitä oluen nimet
-        st.session_state.beer_names = sorted(set(st.session_state.reviews['Oluen nimi'].tolist()))
+        # Päivitä oluen nimet, jos uusi olut lisätty
+        if beer_name not in st.session_state.beer_names:
+            st.session_state.beer_names.append(beer_name)
+            st.session_state.beer_names.sort()
         
         # Getting SHA of the existing file
         sha_url = f"https://api.github.com/repos/{github_repo}/contents/{csv_file}"
